@@ -3,17 +3,38 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --nav-h: 5rem;
+  }
+
   * {
-    @apply selection:bg-dark-blue selection:text-cream;
+    @apply selection:bg-black selection:text-cream;
     font-family: "Plus Jakarta Sans", serif;
     font-optical-sizing: auto;
     font-style: normal;
-    cursor: none;
   }
 
   html,
   body {
-    @apply bg-yellow text-black;
+    @apply bg-cream text-black;
+  }
+
+  h1 {
+    @apply font-black text-xl md:text-3xl;
+  }
+}
+
+@layer utilities {
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+
+  .h-screen {
+    @apply h-[calc(100vh-var(--nav-h))];
+  }
+
+  .min-h-screen {
+    @apply min-h-[calc(100vh-var(--nav-h))];
   }
 }
 
