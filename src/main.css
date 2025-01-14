@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply selection:bg-dark-blue selection:text-cream;
+    font-family: "Plus Jakarta Sans", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    cursor: none;
+  }
+
+  html,
+  body {
+    @apply bg-yellow text-black;
+  }
+}
+
