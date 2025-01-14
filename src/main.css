@@ -16,7 +16,12 @@
 
   html,
   body {
-    @apply bg-cream text-black;
+    @apply text-black;
+  }
+
+  #root {
+    position: relative;
+    z-index: 0;
   }
 
   h1 {
