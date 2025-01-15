@@ -43,3 +43,10 @@
   }
 }
 
+@layer components {
+  .hover-effect {
+    @apply ease-in-out duration-300 relative hover:text-black z-0
+    before:absolute before:left-0 before:top-0 before:h-full before:bg-yellow before:w-0 hover:before:w-full before:origin-left  before:ease-in-out before:duration-300 before:-z-10;
+  }
+}
+
