@@ -6,6 +6,7 @@ import "./main.css";
 
 import LandingPage from "./pages/LandingPage";
 import BaseLayout from "./pages/layouts/BaseLayout";
+import LoginPage from "./pages/LoginPage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -13,6 +14,10 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route element={<BaseLayout />}>
           <Route index element={<LandingPage />} />
+        </Route>
+
+        <Route path="auth">
+          <Route path="login" element={<LoginPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
