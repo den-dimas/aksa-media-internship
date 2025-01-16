@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 
 import { navLinks } from "../../constants";
 import Dropdown from "../Dropdown";
 import { getSystemTheme } from "../../utils";
+import { useCookies } from "react-cookie";
 
 type ThemeList = "dark" | "light" | "os";
 
 export default function NavBar() {
+  const path = useLocation().pathname;
+  const navigate = useNavigate();
+
+  const [cookies, _, removeCookie] = useCookies(["token"]);
+
   const [themeState, setThemeState] = useState<ThemeList>((localStorage.getItem("theme") as ThemeList) || "light");
   const [currentTheme, setCurrentTheme] = useState(themeState == "os" ? getSystemTheme() : themeState);
 
@@ -16,6 +22,11 @@ export default function NavBar() {
   function switchTheme(theme: ThemeList) {
     setThemeState(theme);
     localStorage.setItem("theme", theme);
+  }
+
+  function onClickProfile(item: string) {
+    if (item == "logout") removeCookie("token");
+    if (item == "profile") navigate("/profile");
   }
 
   useEffect(() => {
@@ -38,7 +49,6 @@ export default function NavBar() {
     if (currentTheme == "light") document.body.classList.remove("dark");
   }, [currentTheme]);
 
-  const path = useLocation().pathname;
   if (path.includes("/auth")) return;
 
   return (
@@ -58,25 +68,28 @@ export default function NavBar() {
         ${navOpened ? "max-md:scale-x-100" : "max-md:scale-x-0"}  
       `}
       >
-        {/* Main Routes */}
-        <ul id="nav-list-parent" className="flex flex-col md:flex-row items-center gap-2">
-          {navLinks.map((p, i) => (
-            <li key={i}>
-              <NavLink
-                to={p.rute}
-                className={({
-                  isActive,
-                  isTransitioning,
-                }) => `text-xl px-2 pb-0.5 tracking-tighter text-center ease-in-out duration-300 relative font-medium hover-effect
-                ${isActive ? "before:w-full text-black " : ""}
-                ${isTransitioning ? "before:rounded-lg" : ""}
-                `}
-              >
-                {p.nama}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+        {/* Main Routes for Dynamic Render */}
+        {!!cookies.token && (
+          <ul id="nav-list-parent" className="flex flex-col md:flex-row items-center gap-2 mb-0.5">
+            {navLinks.map((p, i) => (
+              <li key={i}>
+                {" "}
+                <NavLink
+                  to={p.rute}
+                  className={({
+                    isActive,
+                    isTransitioning,
+                  }) => `text-xl px-2 pb-0.5 tracking-tighter text-center ease-in-out duration-300 relative font-medium hover-effect
+                  ${isActive ? "before:w-full text-black " : ""}
+                  ${isTransitioning ? "before:rounded-lg" : ""}
+                  `}
+                >
+                  {p.nama}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Dropdown to select theme */}
         <Dropdown
@@ -86,6 +99,30 @@ export default function NavBar() {
           selected={themeState}
           setSelected={switchTheme}
         />
+
+        {!cookies.token ? (
+          <NavLink
+            to="/auth/login"
+            onClick={() => setNavOpened(false)}
+            className={({
+              isActive,
+              isTransitioning,
+            }) => `text-xl px-2 pb-0.5 tracking-tighter text-center ease-in-out duration-300 relative font-medium hover-effect bg-cream text-dark-purple
+          ${isActive ? "before:w-full text-black " : ""}
+          ${isTransitioning ? "before:rounded-lg" : ""}
+          `}
+          >
+            Login
+          </NavLink>
+        ) : (
+          <Dropdown
+            label={cookies.token.name}
+            labelClassname="bg-cream text-dark-purple dark:text-dark-purple"
+            items={["Profile", "Logout"]}
+            clickOrHover="click"
+            setSelected={onClickProfile}
+          />
+        )}
       </div>
 
       {/* Mobile Nav trigger */}
