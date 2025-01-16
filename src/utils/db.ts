@@ -1,56 +1,158 @@
 import { dataDummyUsers } from "../constants";
 import { User } from "./types";
 
-export const DB_NAME = "aksamedia";
-export const USER_STORE = "users";
-export const PRODUCT_STORE = "products";
-
 export class Database {
-  DB_NAME: string = "aksamedia";
-  USER_STORE: string = "users";
-  PRODUCT_STORE: string = "products";
+  public static DB_NAME: string = "aksamedia";
+  public static USER_STORE: string = "users";
+  public static PRODUCT_STORE: string = "products";
 
-  public static db: IDBDatabase | null = null;
+  public db: IDBDatabase;
 
-  constructor() {
-    this.connect();
+  private constructor(db: IDBDatabase) {
+    this.db = db;
   }
 
-  public connect() {
-    const connection = indexedDB.open(DB_NAME);
+  public static async init() {
+    return new Promise<Database>((resolve, reject) => {
+      const connection = indexedDB.open(Database.DB_NAME);
 
-    connection.onerror = function (err) {
-      console.log(err);
-      return;
-    };
-
-    connection.onupgradeneeded = function () {
-      const db = connection.result;
-
-      const store = db.createObjectStore(USER_STORE, { autoIncrement: true });
-
-      store.createIndex("name", "name", { unique: true });
-      store.createIndex("email", "email", { unique: true });
-
-      store.transaction.oncomplete = () => {
-        const userStore = db.transaction(USER_STORE, "readwrite").objectStore(USER_STORE);
-
-        dataDummyUsers.forEach((u) => userStore.add(u));
+      connection.onerror = function (err) {
+        reject(err);
       };
-    };
 
-    connection.onsuccess = function () {
-      Database.db = connection.result;
-    };
+      connection.onupgradeneeded = function () {
+        const db = connection.result;
+
+        const store = db.createObjectStore(Database.USER_STORE, { autoIncrement: true });
+
+        store.createIndex("name", "name", { unique: false });
+        store.createIndex("email", "email", { unique: true });
+
+        store.transaction.oncomplete = () => {
+          const userStore = db.transaction([Database.USER_STORE], "readwrite").objectStore(Database.USER_STORE);
+
+          dataDummyUsers.forEach((u) => userStore.add(u));
+        };
+      };
+
+      connection.onsuccess = function () {
+        resolve(new Database(connection.result));
+      };
+    });
   }
 
-  public searchIndex(store: string, index: string, key: string): IDBRequest<User> | null {
-    if (Database.db == null) return null;
+  public static async connect() {
+    return new Promise<Database>((resolve, reject) => {
+      const connection = indexedDB.open(Database.DB_NAME);
 
-    const find = Database.db.transaction(store, "readonly").objectStore(store);
+      connection.onsuccess = function () {
+        resolve(new Database(connection.result));
+      };
 
-    const idx = find.index(index).get(key);
+      connection.onerror = function (err) {
+        reject(err);
+      };
+    });
+  }
 
-    return idx;
+  public async searchEmail(email: string) {
+    return new Promise<User>((resolve, reject) => {
+      if (this.db == null) reject("Database is not connected!");
+      else {
+        const find = this.db.transaction([Database.USER_STORE], "readonly").objectStore(Database.USER_STORE);
+
+        const idx = find.index("email").get(email);
+
+        idx.onsuccess = function () {
+          resolve(idx.result);
+        };
+      }
+    });
+  }
+
+  public async changeUserByEmail(email: string, name: string) {
+    return new Promise<User>((resolve, reject) => {
+      if (this.db == null) reject("Database is not connected!");
+      else {
+        const userStore = this.db.transaction([Database.USER_STORE], "readwrite").objectStore(Database.USER_STORE);
+
+        const findUser = userStore.index("email").openCursor();
+
+        findUser.onsuccess = function () {
+          const cursor = findUser.result;
+
+          if (cursor && cursor.value.email == email) {
+            const changeUser = userStore.put({ ...cursor.value, name }, cursor.primaryKey);
+
+            changeUser.onsuccess = () => resolve({ ...cursor.value, name });
+            changeUser.onerror = (err) => {
+              console.log(err);
+              reject("Cannot change user!");
+            };
+          } else {
+            cursor?.continue();
+          }
+        };
+
+        findUser.onerror = function () {
+          reject("Cannot find user!");
+        };
+      }
+    });
+  }
+
+  public async searchIndex<T>(store: string, index: string, key: string) {
+    return new Promise<T>((resolve, reject) => {
+      if (this.db == null) reject("Database is not connected");
+      else {
+        const find = this.db.transaction(store, "readonly").objectStore(store);
+
+        const idx = find.index(index).get(key);
+
+        idx.onsuccess = function () {
+          resolve(idx.result);
+        };
+      }
+    });
+  }
+
+  public async getUsers() {
+    return new Promise<User[]>((resolve, reject) => {
+      if (this.db == null) reject("Database is not connected!");
+      else {
+        const userStore = this.db.transaction([Database.USER_STORE], "readonly").objectStore(Database.USER_STORE);
+
+        const findUsers = userStore.getAll();
+
+        findUsers.onsuccess = function () {
+          if (!findUsers.result) reject("Couldn't get users!");
+
+          resolve(findUsers.result);
+        };
+
+        findUsers.onerror = function (err) {
+          reject(err.target);
+        };
+      }
+    });
+  }
+
+  public async getUsersCount() {
+    return new Promise<number>((resolve, reject) => {
+      if (this.db == null) reject("Database is not connected!");
+      else {
+        const userStore = this.db.transaction([Database.USER_STORE], "readonly").objectStore(Database.USER_STORE);
+
+        const countUsers = userStore.count();
+
+        countUsers.onsuccess = function () {
+          resolve(countUsers.result);
+        };
+
+        countUsers.onerror = function () {
+          reject("Error counting Users size!");
+        };
+      }
+    });
   }
 }
