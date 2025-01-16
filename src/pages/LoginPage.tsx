@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [_, setCookie] = useCookies(["token"]);
 
+  const [showHelp, setShowHelp] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -80,8 +82,22 @@ export default function LoginPage() {
             <h1 className="text-6xl font-bold tracking-tighter">Login</h1>
 
             <p className="text-dark-purple dark:text-cream opacity-70 text-lg">
-              Enter your email below to login to your account!
+              Enter your email below to login to your account!{" "}
+              <span
+                className="bg-dark-blue text-cream px-1 select-none dark:bg-cream dark:text-darker-purple opacity-55 cursor-help font-black text-sm"
+                onClick={() => setShowHelp(!showHelp)}
+              >
+                ?
+              </span>
             </p>
+
+            {showHelp && (
+              <div className="p-4 text-sm absolute bg-cream border-2 border-dark-blue dark:border-cream dark:bg-darker-purple text-black dark:text-cream left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                Account 1: dimas@gmail.com || dimas123 <br />
+                Account 2: admin@gmail.com || admin123 <br />
+                Account 3: dermawan@gmail.com || dermawan123
+              </div>
+            )}
           </section>
 
           <form method="POST" className="flex flex-col gap-4" onSubmit={onSubmit}>
