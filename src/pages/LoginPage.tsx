@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { useCookies } from "react-cookie";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { toastError } from "../utils";
-import { Database, USER_STORE } from "../utils/db";
+import { Database } from "../utils/db";
 import { LoginForm, loginSchema } from "../utils/schema";
-import { useCookies } from "react-cookie";
-import { useNavigate } from "react-router";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,43 +28,41 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
-  const db = new Database();
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(async (data) => {
     const { email, password } = data;
 
-    const request = db.searchIndex(USER_STORE, "email", email);
-    if (!request) {
-      toastError("Failed to login! Try again!");
+    const db = await Database.connect();
+
+    const result = await db.searchEmail(email);
+
+    if (!result) {
+      setError("email", { message: "Email not found!" });
       return;
     }
 
-    request.onsuccess = () => {
-      const data = request.result;
+    if (result.password != password) {
+      setError("password", { message: "Wrong password!" });
+      return;
+    }
 
-      if (!data) {
-        setError("email", { message: "Email not found!" });
-        return;
-      }
+    /* DISCLAIMER
+     * The token should've been coming from API
+     * and not from client. I use this just for the sake
+     * of demonstrating Authorization for the app.
+     */
+    setCookie("token", result, { path: "/" });
 
-      if (data.password != password) {
-        setError("password", { message: "Wrong password!" });
-        return;
-      }
-
-      /* DISCLAIMER
-       * The token should've been coming from API
-       * and not from client. I use this just for the sake
-       * of demonstrating Authorization for the app.
-       */
-      setCookie("token", data);
-      navigate("/dashboard");
-    };
+    navigate("/");
   });
 
   // Inject static user data for logging in
   useEffect(() => {
-    if (Database.db == null) db.connect();
+    async function initDB() {
+      await Database.init();
+    }
+
+    initDB();
   }, []);
 
   return (
