@@ -1,14 +1,17 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
-
-import { LoginForm, loginSchema } from "../utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { Database, USER_STORE } from "../utils/db";
+
 import { toastError } from "../utils";
+import { Database, USER_STORE } from "../utils/db";
+import { LoginForm, loginSchema } from "../utils/schema";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [_, setCookie] = useCookies(["token"]);
 
   const {
     register,
@@ -24,6 +27,7 @@ export default function LoginPage() {
     mode: "onChange",
   });
 
+  const navigate = useNavigate();
   const db = new Database();
 
   const onSubmit = handleSubmit((data) => {
@@ -36,18 +40,25 @@ export default function LoginPage() {
     }
 
     request.onsuccess = () => {
-      if (!request.result) {
+      const data = request.result;
+
+      if (!data) {
         setError("email", { message: "Email not found!" });
         return;
       }
 
-      if (request.result.password != password) {
+      if (data.password != password) {
         setError("password", { message: "Wrong password!" });
         return;
       }
 
-      // Success Login
-      // Save info to cookie
+      /* DISCLAIMER
+       * The token should've been coming from API
+       * and not from client. I use this just for the sake
+       * of demonstrating Authorization for the app.
+       */
+      setCookie("token", data);
+      navigate("/dashboard");
     };
   });
 
@@ -81,11 +92,13 @@ export default function LoginPage() {
                 Email
               </label>
               <input
-                className="ring-0 focus:ring-0 focus:outline-none border-2 border-dark-blue dark:border-cream pl-4 py-2 w-full"
-                placeholder="Masukkan email Anda..."
                 {...register("email")}
+                className="bg-cream ring-0 focus:ring-0 focus:outline-none border-2 border-dark-blue dark:border-cream pl-4 py-2 w-full"
+                placeholder="Masukkan email Anda..."
               />
-              {errors?.email && <p className="text-red-700 mt-1 ml-1 text-sm">{errors.email.message}</p>}
+              {errors?.email && (
+                <p className="text-red-700 dark:text-red-300 mt-1 ml-1 text-sm">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -93,20 +106,23 @@ export default function LoginPage() {
                 Password
               </label>
               <input
-                className="ring-0 focus:ring-0 focus:outline-none border-2 border-dark-blue dark:border-cream pl-4 py-2 w-full"
-                placeholder="Masukkan password Anda..."
                 {...register("password")}
+                className="bg-cream ring-0 focus:ring-0 focus:outline-none border-2 border-dark-blue dark:border-cream pl-4 py-2 w-full"
+                placeholder="Masukkan password Anda..."
                 type={showPassword ? "text" : "password"}
               />
-              {errors?.password && <p className="text-red-700 mt-1 ml-1 text-sm">{errors.password.message}</p>}
+              {errors?.password && (
+                <p className="text-red-700 dark:text-red-300 mt-1 ml-1 text-sm">{errors.password.message}</p>
+              )}
+
               <div className="flex items-center gap-1 mt-1 ml-1">
                 <div
                   title="Show Password"
-                  className={`w-2.5 h-2.5 rounded-full border-2 border-black cursor-pointer ease-in-out duration-100
-                ${showPassword ? "bg-black" : "bg-white"}`}
+                  className={`w-2.5 h-2.5 rounded-full border-2 border-dark-purple dark:border-cream cursor-pointer ease-in-out duration-100
+                ${showPassword ? "bg-darker-purple dark:bg-cream" : "bg-cream dark:bg-darker-purple"}`}
                   onClick={() => setShowPassword(!showPassword)}
                 />
-                <p className="italic text-sm opacity-70 select-none">Show Password</p>
+                <p className="italic text-sm opacity-70 select-none dark:text-cream">Show Password</p>
               </div>
             </div>
 
