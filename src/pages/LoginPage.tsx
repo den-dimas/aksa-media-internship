@@ -92,7 +92,7 @@ export default function LoginPage() {
             </p>
 
             {showHelp && (
-              <div className="p-4 text-sm absolute bg-cream border-2 border-dark-blue dark:border-cream dark:bg-darker-purple text-black dark:text-cream left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+              <div className="p-4 text-sm absolute bg-cream border-2 border-dark-blue dark:border-cream dark:bg-darker-purple text-black dark:text-cream left-1/2 -translate-x-1/2 top-[65%] -translate-y-1/2">
                 Account 1: dimas@gmail.com || dimas123 <br />
                 Account 2: admin@gmail.com || admin123 <br />
                 Account 3: dermawan@gmail.com || dermawan123
