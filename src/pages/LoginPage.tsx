@@ -24,14 +24,14 @@ export default function LoginPage() {
 
   return (
     <div id="login-page" className="flex w-screen h-[100vh] items-center justify-between">
-      <section className="h-full flex-center flex-col flex-1 bg-dark-blue dark:bg-dark-purple">
+      <section className="hidden h-full md:flex-center flex-col flex-1 bg-dark-blue dark:bg-dark-purple">
         <h1 className="bg-cream p-2 text-dark-blue dark:text-dark-purple">
           WELCOME <span>TO</span>
         </h1>
         <h1 className="text-6xl text-cream">Aksa Media</h1>
       </section>
 
-      <section id="login-section" className="h-full flex-center flex-1 dark:bg-darker-purple">
+      <section id="login-section" className="h-full flex-center flex-1 dark:bg-darker-purple px-4">
         <div className="flex flex-col gap-4">
           <section className="flex flex-col gap-2">
             <h1 className="text-6xl font-bold tracking-tighter">Login</h1>

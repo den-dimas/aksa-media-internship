@@ -4,10 +4,10 @@ type NavLink = {
 };
 
 export const navLinks: NavLink[] = [
-  // {
-  //   nama: "Home",
-  //   rute: "/",
-  // },
+  {
+    nama: "Home",
+    rute: "/",
+  },
   {
     nama: "Login",
     rute: "/auth/login",

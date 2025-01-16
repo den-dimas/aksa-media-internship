@@ -11,6 +11,8 @@ export default function NavBar() {
   const [themeState, setThemeState] = useState<ThemeList>((localStorage.getItem("theme") as ThemeList) || "light");
   const [currentTheme, setCurrentTheme] = useState(themeState == "os" ? getSystemTheme() : themeState);
 
+  const [navOpened, setNavOpened] = useState(false);
+
   function switchTheme(theme: ThemeList) {
     setThemeState(theme);
     localStorage.setItem("theme", theme);
@@ -44,13 +46,20 @@ export default function NavBar() {
       id="navigation-bar"
       className="flex items-center justify-between h-[var(--nav-h)] py-2 px-4 sticky top-0 bg-dark-blue text-cream dark:bg-dark-purple z-10"
     >
+      {/* Logo */}
       <NavLink to="/">
         <h1 className="font-black text-3xl tracking-tighter">Aksa Media</h1>
       </NavLink>
 
-      <div className="flex gap-4">
+      {/* Main Navigation */}
+      <div
+        className={`
+        flex max-md:flex-center items-center flex-col md:flex-row gap-2 w-screen h-screen md:w-auto md:h-auto absolute md:relative top-full md:top-auto left-0 md:left-auto max-md:bg-dark-blue dark:max-md:bg-dark-purple ease-in-out duration-100 origin-right
+        ${navOpened ? "max-md:scale-x-100" : "max-md:scale-x-0"}  
+      `}
+      >
         {/* Main Routes */}
-        <ul id="nav-list-parent" className="flex items-center gap-2">
+        <ul id="nav-list-parent" className="flex flex-col md:flex-row items-center gap-2">
           {navLinks.map((p, i) => (
             <li key={i}>
               <NavLink
@@ -69,6 +78,7 @@ export default function NavBar() {
           ))}
         </ul>
 
+        {/* Dropdown to select theme */}
         <Dropdown
           label="Theme"
           items={["OS", "Dark", "Light"]}
@@ -76,9 +86,13 @@ export default function NavBar() {
           selected={themeState}
           setSelected={switchTheme}
         />
+      </div>
 
-        {/* Dropdown goes here */}
-        <div id=""></div>
+      {/* Mobile Nav trigger */}
+      <div id="burger-trigger" onClick={() => setNavOpened(!navOpened)} className="md:hidden w-7">
+        <div className={`ease-in-out duration-100 h-1 bg-cream ${navOpened ? "rotate-45 translate-y-2" : ""}`} />
+        <div className={`ease-in-out duration-100 h-1 bg-cream my-1 ${navOpened ? "scale-x-0" : ""}`} />
+        <div className={`ease-in-out duration-100 h-1 bg-cream ${navOpened ? "-rotate-45 -translate-y-2" : ""}`} />
       </div>
     </nav>
   );
