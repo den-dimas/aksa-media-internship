@@ -1,29 +1,48 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 
 import { navLinks } from "../../constants";
+import Dropdown from "../Dropdown";
+import { getSystemTheme } from "../../utils";
 
 type ThemeList = "dark" | "light" | "os";
 
 export default function NavBar() {
-  const [themeState, setThemeState] = useState<ThemeList>((localStorage.getItem("theme") as ThemeList) || "os");
+  const [themeState, setThemeState] = useState<ThemeList>((localStorage.getItem("theme") as ThemeList) || "light");
+  const [currentTheme, setCurrentTheme] = useState(themeState == "os" ? getSystemTheme() : themeState);
 
   function switchTheme(theme: ThemeList) {
-    if (theme == "os") {
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", (e) => (e.matches ? setThemeState("dark") : setThemeState("light")));
-    }
+    setThemeState(theme);
+    localStorage.setItem("theme", theme);
   }
 
   useEffect(() => {
-    localStorage.setItem("theme", themeState);
+    if (themeState == "os") {
+      setCurrentTheme(getSystemTheme());
+
+      const sysTheme = window.matchMedia("(prefers-color-scheme: dark)");
+      const sysChange = (e: MediaQueryListEvent) => setCurrentTheme(e.matches ? "dark" : "light");
+
+      sysTheme.addEventListener("change", sysChange);
+
+      return () => sysTheme.removeEventListener("change", sysChange);
+    } else {
+      setCurrentTheme(themeState);
+    }
   }, [themeState]);
+
+  useEffect(() => {
+    if (currentTheme == "dark") document.body.classList.add("dark");
+    if (currentTheme == "light") document.body.classList.remove("dark");
+  }, [currentTheme]);
+
+  const path = useLocation().pathname;
+  if (path.includes("/auth")) return;
 
   return (
     <nav
       id="navigation-bar"
-      className="flex items-center justify-between h-[var(--nav-h)] py-2 px-4 sticky top-0 bg-dark-blue text-cream z-10"
+      className="flex items-center justify-between h-[var(--nav-h)] py-2 px-4 sticky top-0 bg-dark-blue text-cream dark:bg-dark-purple z-10"
     >
       <NavLink to="/">
         <h1 className="font-black text-3xl tracking-tighter">Aksa Media</h1>
@@ -50,9 +69,13 @@ export default function NavBar() {
           ))}
         </ul>
 
-        <div id="theme-switcher" className="">
-          <div className="w-8 h-8 rounded-full bg-black cursor-pointer" onClick={() => switchTheme("dark")} />
-        </div>
+        <Dropdown
+          label="Theme"
+          items={["OS", "Dark", "Light"]}
+          clickOrHover="click"
+          selected={themeState}
+          setSelected={switchTheme}
+        />
 
         {/* Dropdown goes here */}
         <div id=""></div>

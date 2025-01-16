@@ -14,10 +14,10 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         <Route element={<BaseLayout />}>
           <Route index element={<LandingPage />} />
-        </Route>
 
-        <Route path="auth">
-          <Route path="login" element={<LoginPage />} />
+          <Route path="auth">
+            <Route path="login" element={<LoginPage />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

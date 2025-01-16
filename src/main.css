@@ -25,7 +25,7 @@
   }
 
   h1 {
-    @apply font-black text-xl md:text-3xl;
+    @apply font-black dark:text-cream text-xl md:text-3xl;
   }
 }
 
