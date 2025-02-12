@@ -19,6 +19,10 @@
     @apply text-black overflow-x-hidden scroll-smooth;
   }
 
+  body {
+    @apply h-screen;
+  }
+
   #root {
     position: relative;
     z-index: 0;
